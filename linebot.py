@@ -1,51 +1,9 @@
-from flask import Flask, request, abort
+from flask import Flask
+app = Flask(__name__) # __name__ 為 python 內建的變數，他會儲存目前程式在哪個模組下執行
 
-from linebot import (
-	LineBotApi, WebhookHandler
-)
-from linebot.exceptions import (
-	InvalidSignatureError
-)
-from linebot.models import (
-	MessageEvent, TextMessage, TextSendMessage,
-)
-
-app = Flask(__name__)
-line_bot_api = LineBotApi('<YOUR_CHANNEL_ACCESS_TOKEN>')
-handler = WebhookHandler('<YOUR_CHANNEL_SECRET>')
-
-@app.route("/callback", methods=['POST'])
-def callback():
-	# get X-Line-Signature header value
-	signature = request.headers['X-Line-Signature']
-	# get request body as text
-	body = request.get_data(as_text=True)
-	app.logger.info("Request body: " + body)
-
-	#handle webhook body
-	try:
-		handler.handle(body, signature)
-	except InvalidSignatureError:
-		abort(400)
-
-	return 'OK'
-
-
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-	if (event.reply_token ==  '00000000000000000000000000000000'):#加這一條讓機器人被加好友時，不會回傳錯誤
-		return None
-	line_bot_api.reply_message(
-		event.reply_token,
-		TextSendMessage(text=event.message.text))
-
-
-
-if __name__ == "__main__":
-	app.run(
-		host = '0.0.0.0',
-		port = 50000,  
-		debug = True,
-		ssl_context ='adhoc'
-		
-	)
+@app.route("/") #函式的裝飾 ( Decorator )，以底下函式為基礎，提供附加的功能，這邊 "/" 代表根目錄
+def home():
+    return "Hello Flask"
+    
+if __name__ == "__main__": #如果以主程式運行
+    app.run() 
